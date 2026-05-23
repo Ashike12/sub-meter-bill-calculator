@@ -227,14 +227,13 @@
   <details>
     <summary>Slab rate reference (main meter)</summary>
     <table class="slab-table">
-      <thead><tr><th>Range (units)</th><th>Base (৳)</th><th>&gt;300 (+0.5)</th><th>&gt;400 (+2)</th><th>&gt;600 (+4)</th></tr></thead>
+      <thead><tr><th>Range (units)</th><th>Rate (৳/kWh)</th></tr></thead>
       <tbody id="slabBody"></tbody>
     </table>
   </details>
 
   <footer>
-    Average rate = Total energy cost ÷ Total units &nbsp;·&nbsp; Each flat: avg rate × units + ৳40 meter rent + ৳45 demand charge ÷ no. of flats + 5% VAT<br>
-    &gt;300 units: +৳0.5/slab &nbsp;·&nbsp; &gt;400 units: +৳2/slab &nbsp;·&nbsp; &gt;600 units: +৳4/slab
+    Average rate = Total energy cost ÷ Total units &nbsp;·&nbsp; Each flat: avg rate × units + ৳40 meter rent + ৳45 demand ÷ no. of flats + 5% VAT
   </footer>
 </div>
 
@@ -285,13 +284,8 @@
   ];
   const PREV   = [0,75,200,300,400,600];
   const RANGES = ['0–75','76–200','201–300','301–400','401–600','601+'];
-  const COLS   = [0, 0.5, 2, 4];
-
-  function getBonus(u){ return u>600?4:u>400?2:u>300?0.5:0; }
-  function getSlabs(b){ return BASE.map(s=>({...s,rate:+(s.rate+b).toFixed(2)})); }
-
   function totalEnergyCost(units) {
-    const slabs = getSlabs(getBonus(units));
+    const slabs = BASE;
     let cost=0, rem=units;
     for(let i=0;i<slabs.length;i++){
       const cap = slabs[i].upTo===Infinity ? rem : Math.max(0,slabs[i].upTo-PREV[i]);
@@ -333,7 +327,7 @@
       const avgPerUnit = energyCost / main; // avg of energy portion only
       document.getElementById('avgValue').textContent  = fmtR(avgPerUnit)+'/kWh';
       document.getElementById('avgDetail').textContent =
-        `Main bill energy: ${fmt(energyCost)} ÷ ${main} units (slab bonus: +৳${getBonus(main)}/unit)`;
+        `Main bill energy: ${fmt(energyCost)} ÷ ${main} units`;
       banner.classList.add('show');
     } else {
       banner.classList.remove('show');
@@ -424,20 +418,12 @@
 
   /* SLAB TABLE */
   function buildSlabTable() {
-    const main = Math.max(0, parseFloat(document.getElementById('mainUnits')?.value)||0);
-    const bonus = getBonus(main);
-    const tierIdx = bonus===0?0:bonus===0.5?1:bonus===2?2:3;
     const body = document.getElementById('slabBody');
     body.innerHTML='';
     for(let i=0;i<BASE.length;i++){
       const tr=document.createElement('tr');
-      let cells=`<td>${RANGES[i]}</td>`;
-      for(let t=0;t<4;t++){
-        const r=(BASE[i].rate+COLS[t]).toFixed(2);
-        const active = t===tierIdx;
-        cells+=`<td style="${active?'color:var(--accent);font-weight:500;':''}">${r}</td>`;
-      }
-      tr.innerHTML=cells; body.appendChild(tr);
+      tr.innerHTML=`<td>${RANGES[i]}</td><td>${BASE[i].rate.toFixed(2)}</td>`;
+      body.appendChild(tr);
     }
   }
 
