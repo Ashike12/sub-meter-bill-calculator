@@ -4,702 +4,446 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Electricity Bill Calculator</title>
-
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet" />
-
 <style>
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f0f; --surface: #181818; --surface2: #222222;
+    --border: #2e2e2e; --accent: #c8f135; --warning: #f5a623; --danger: #f56262;
+    --text: #f0f0f0; --muted: #888;
+    --font-d: 'Syne', sans-serif; --font-m: 'DM Mono', monospace;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-d); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 4rem; }
 
-:root {
-  --bg: #0f0f0f;
-  --surface: #181818;
-  --surface2: #222222;
-  --border: #2e2e2e;
-  --accent: #c8f135;
-  --warning: #f5a623;
-  --danger: #f56262;
-  --text: #f0f0f0;
-  --muted: #888;
+  /* LOGIN */
+  #loginPage { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%; max-width: 400px; position: fixed; inset: 0; margin: auto; padding: 2rem; }
+  .login-icon { font-size: 2.5rem; margin-bottom: 1.5rem; }
+  .login-eyebrow { font-family: var(--font-m); font-size: 11px; letter-spacing: .12em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; text-align: center; }
+  .login-title { font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .login-sub { font-family: var(--font-m); font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 2rem; }
+  .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; }
+  .login-label { font-family: var(--font-m); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; display: block; }
+  .pw-wrap { position: relative; }
+  .pw-wrap input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font-m); font-size: 1rem; padding: .75rem 3rem .75rem 1rem; outline: none; transition: border-color .2s; }
+  .pw-wrap input:focus { border-color: var(--accent); }
+  .pw-wrap input.error { border-color: var(--danger); }
+  .pw-toggle { position: absolute; right: .75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 4px; }
+  .pw-toggle:hover { color: var(--text); }
+  .error-msg { font-family: var(--font-m); font-size: 12px; color: var(--danger); margin-top: 8px; min-height: 16px; }
+  .login-btn { margin-top: 1.25rem; width: 100%; background: var(--accent); color: #111; border: none; border-radius: 10px; font-family: var(--font-d); font-size: 15px; font-weight: 700; padding: .85rem; cursor: pointer; transition: opacity .2s, transform .1s; }
+  .login-btn:hover { opacity: .9; }
+  .login-btn:active { transform: scale(.98); }
 
-  --font-d: 'Syne', sans-serif;
-  --font-m: 'DM Mono', monospace;
-}
+  /* APP */
+  #appPage { display: none; flex-direction: column; align-items: center; width: 100%; }
+  header { width: 100%; max-width: 660px; margin-bottom: 2rem; padding-top: 1rem; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .eyebrow { font-family: var(--font-m); font-size: 11px; letter-spacing: .12em; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: clamp(1.4rem,5vw,2rem); font-weight: 700; line-height: 1.1; }
+  header p { margin-top: 8px; font-size: 14px; color: var(--muted); font-family: var(--font-m); }
+  .logout-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-m); font-size: 11px; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: all .2s; white-space: nowrap; margin-top: 4px; }
+  .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-d);
-  min-height: 100vh;
-}
+  .card { width: 100%; max-width: 660px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; margin-bottom: 1rem; }
+  .card-label { font-family: var(--font-m); font-size: 11px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; margin-bottom: 1.25rem; }
 
-/* ACCESS SCREEN */
+  /* step label */
+  .step-label { font-family: var(--font-m); font-size: 10px; letter-spacing: .12em; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
 
-.access-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
+  /* two-col grid */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media(max-width:480px){ .grid2 { grid-template-columns: 1fr; } }
 
-.access-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 2rem;
-}
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .ig-label { font-family: var(--font-m); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .ig-wrap { position: relative; }
+  .ig-wrap input, .ig-wrap select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-family: var(--font-m);
+    font-size: 1.4rem; font-weight: 500; padding: .65rem 2.8rem .65rem 1rem;
+    outline: none; transition: border-color .2s; -moz-appearance: textfield;
+    appearance: none;
+  }
+  .ig-wrap input::-webkit-outer-spin-button,
+  .ig-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .ig-wrap input:focus, .ig-wrap select:focus { border-color: var(--accent); }
+  .ig-wrap .sfx { position: absolute; right: .75rem; top: 50%; transform: translateY(-50%); font-family: var(--font-m); font-size: 11px; color: var(--muted); pointer-events: none; }
 
-.access-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
+  /* avg cost banner */
+  .avg-banner { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: .75rem 1rem; margin-top: 1rem; display: none; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .avg-banner.show { display: flex; }
+  .avg-label { font-family: var(--font-m); font-size: 12px; color: var(--muted); }
+  .avg-value { font-family: var(--font-m); font-size: 1.1rem; font-weight: 500; color: var(--accent); }
+  .avg-detail { font-family: var(--font-m); font-size: 11px; color: #555; width: 100%; margin-top: 2px; }
 
-.access-sub {
-  color: var(--muted);
-  font-family: var(--font-m);
-  font-size: 13px;
-  margin-bottom: 2rem;
-  line-height: 1.7;
-}
+  /* divider */
+  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
 
-.access-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text);
-  font-family: var(--font-m);
-  font-size: 14px;
-  padding: 1rem;
-  outline: none;
-  transition: .2s;
-}
+  /* sub-meter rows */
+  #subMetersWrap { display: flex; flex-direction: column; gap: 10px; margin-top: .5rem; }
+  .sub-row { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: .75rem 1rem; }
+  .sub-tag { font-family: var(--font-m); font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .sub-input-wrap { position: relative; }
+  .sub-input-wrap input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--font-m); font-size: 1.1rem; font-weight: 500; padding: .5rem 3rem .5rem .75rem; outline: none; transition: border-color .2s; -moz-appearance: textfield; }
+  .sub-input-wrap input::-webkit-outer-spin-button,
+  .sub-input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .sub-input-wrap input:focus { border-color: var(--accent); }
+  .sub-input-wrap .sfx { position: absolute; right: .6rem; top: 50%; transform: translateY(-50%); font-family: var(--font-m); font-size: 11px; color: var(--muted); }
 
-.access-input:focus {
-  border-color: var(--accent);
-}
+  .calc-btn { margin-top: 1.25rem; width: 100%; background: var(--accent); color: #111; border: none; border-radius: 10px; font-family: var(--font-d); font-size: 15px; font-weight: 700; padding: .85rem; cursor: pointer; transition: opacity .2s, transform .1s; }
+  .calc-btn:hover { opacity: .88; }
+  .calc-btn:active { transform: scale(.98); }
+  .enter-hint { font-family: var(--font-m); font-size: 11px; color: #444; text-align: center; margin-top: 6px; }
+  kbd { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-family: var(--font-m); font-size: 10px; color: var(--muted); }
 
-.access-btn {
-  width: 100%;
-  margin-top: 1rem;
-  background: var(--accent);
-  border: none;
-  color: #111;
-  border-radius: 12px;
-  padding: 1rem;
-  cursor: pointer;
-  font-weight: 700;
-  font-family: var(--font-m);
-}
+  /* results */
+  .result-hidden  { opacity: .2; pointer-events: none; filter: blur(3px); transition: all .35s; }
+  .result-visible { opacity: 1;  pointer-events: auto; filter: none;      transition: all .35s; }
 
-.access-error {
-  margin-top: 12px;
-  color: var(--danger);
-  font-size: 13px;
-  font-family: var(--font-m);
-  min-height: 18px;
-}
+  /* result cards per sub */
+  #subResultsWrap { width: 100%; max-width: 660px; display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1rem; }
+  .sub-result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .src-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem .75rem; border-bottom: 1px solid var(--border); }
+  .src-name { font-size: 14px; font-weight: 700; color: var(--text); font-family: var(--font-m); }
+  .src-total { font-size: 1.4rem; font-weight: 500; font-family: var(--font-m); color: var(--accent); }
+  .src-body { padding: .5rem 1.25rem .75rem; }
+  .src-row { display: flex; justify-content: space-between; font-family: var(--font-m); font-size: 12px; padding: 4px 0; border-bottom: 1px solid #1e1e1e; }
+  .src-row:last-child { border-bottom: none; }
+  .src-row .sl { color: var(--muted); }
+  .src-row .sv { color: var(--text); }
+  .src-row.highlight .sv { color: var(--accent); }
 
-/* MAIN APP */
+  /* summary total */
+  .grand-card { width: 100%; max-width: 660px; background: var(--accent); border-radius: 16px; padding: 1.25rem 1.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .grand-card .gl { font-size: 13px; font-weight: 700; color: #111; font-family: var(--font-m); text-transform: uppercase; letter-spacing: .08em; }
+  .grand-card .ga { font-family: var(--font-m); font-size: 1.8rem; font-weight: 500; color: #111; }
 
-#app {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem 4rem;
-}
+  /* unaccounted warning */
+  .unac-card { width: 100%; max-width: 660px; background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.3); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; font-family: var(--font-m); font-size: 13px; color: var(--warning); display: none; }
+  .unac-card.show { display: block; }
 
-header {
-  width: 100%;
-  max-width: 560px;
-  margin-bottom: 2.5rem;
-  padding-top: 1rem;
-}
+  details { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; width: 100%; max-width: 660px; }
+  summary { font-family: var(--font-m); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; padding: 1rem 1.75rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  summary::after { content: '▸'; font-size: 10px; transition: transform .2s; }
+  details[open] summary::after { transform: rotate(90deg); }
+  .slab-table { width: 100%; border-collapse: collapse; font-family: var(--font-m); font-size: 13px; }
+  .slab-table th { text-align: left; color: var(--muted); font-weight: 400; padding: 6px 1.75rem; border-top: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  .slab-table td { padding: 8px 1.75rem; color: var(--text); border-top: 1px solid var(--border); }
 
-.eyebrow {
-  font-family: var(--font-m);
-  font-size: 11px;
-  letter-spacing: .12em;
-  color: var(--accent);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-h1 {
-  font-size: clamp(1.6rem,5vw,2.2rem);
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-header p {
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--muted);
-  font-family: var(--font-m);
-}
-
-.card {
-  width: 100%;
-  max-width: 560px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.75rem;
-  margin-bottom: 1rem;
-}
-
-.card-label {
-  font-family: var(--font-m);
-  font-size: 11px;
-  letter-spacing: .1em;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 1.25rem;
-}
-
-.input-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.unit-wrap {
-  flex: 1;
-  position: relative;
-}
-
-.unit-wrap input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: var(--font-m);
-  font-size: 2rem;
-  font-weight: 500;
-  padding: .75rem 3.5rem .75rem 1.25rem;
-  outline: none;
-}
-
-.unit-wrap input:focus {
-  border-color: var(--accent);
-}
-
-.unit-wrap .sfx {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: var(--font-m);
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.pill {
-  font-family: var(--font-m);
-  font-size: 11px;
-  padding: 5px 12px;
-  border-radius: 100px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.pill.normal {
-  background: rgba(200,241,53,.12);
-  color: var(--accent);
-}
-
-.pill.medium {
-  background: rgba(245,166,35,.12);
-  color: var(--warning);
-}
-
-.pill.high {
-  background: rgba(245,166,35,.18);
-  color: var(--warning);
-}
-
-.pill.extreme {
-  background: rgba(245,98,98,.15);
-  color: var(--danger);
-}
-
-.hint {
-  font-family: var(--font-m);
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 10px;
-}
-
-.b-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.b-row:last-child {
-  border-bottom: none;
-}
-
-.lbl {
-  font-size: 14px;
-  color: var(--muted);
-  font-family: var(--font-m);
-}
-
-.sub {
-  font-size: 11px;
-  color: #555;
-  font-family: var(--font-m);
-  margin-top: 3px;
-}
-
-.val {
-  font-family: var(--font-m);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.total-card {
-  width: 100%;
-  max-width: 560px;
-  border-radius: 16px;
-  padding: 1.5rem 1.75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.total-card.t0 { background: var(--accent); }
-.total-card.t1 { background: #d4b830; }
-.total-card.t2 { background: var(--warning); }
-.total-card.t3 { background: var(--danger); }
-
-.t-lbl {
-  font-size: 13px;
-  font-weight: 700;
-  color: #111;
-  font-family: var(--font-m);
-}
-
-.t-amt {
-  font-family: var(--font-m);
-  font-size: 2rem;
-  color: #111;
-}
-
-details {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  overflow: hidden;
-  width: 100%;
-  max-width: 560px;
-}
-
-summary {
-  font-family: var(--font-m);
-  font-size: 12px;
-  color: var(--muted);
-  padding: 1rem 1.75rem;
-  cursor: pointer;
-}
-
-.slab-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-m);
-  font-size: 13px;
-}
-
-.slab-table th,
-.slab-table td {
-  padding: 10px 1.75rem;
-  border-top: 1px solid var(--border);
-}
-
-footer {
-  margin-top: 2rem;
-  font-family: var(--font-m);
-  font-size: 11px;
-  color: #444;
-  text-align: center;
-  line-height: 1.8;
-}
+  footer { margin-top: 2rem; font-family: var(--font-m); font-size: 11px; color: #444; text-align: center; max-width: 660px; line-height: 1.9; }
 </style>
 </head>
-
 <body>
 
-<!-- ACCESS SCREEN -->
-
-<div class="access-screen" id="accessScreen">
-
-  <div class="access-card">
-
-    <div class="eyebrow">Secure Access</div>
-
-    <div class="access-title">
-      Electricity Portal
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-icon">⚡</div>
+  <div class="login-eyebrow">BPDB Residential</div>
+  <div class="login-title">Bill Calculator</div>
+  <div class="login-sub">Private access only</div>
+  <div class="login-card">
+    <label class="login-label" for="pwInput">Access password</label>
+    <div class="pw-wrap">
+      <input type="password" id="pwInput" placeholder="Enter password…" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()" />
+      <button class="pw-toggle" onclick="togglePw()" id="pwToggle">👁</button>
     </div>
-
-    <div class="access-sub">
-      Enter access key to continue.
-    </div>
-
-    <input
-      type="password"
-      id="password"
-      class="access-input"
-      placeholder="Enter access key"
-      onkeydown="if(event.key==='Enter') checkAccess()"
-    />
-
-    <button class="access-btn" onclick="checkAccess()">
-      Access Portal
-    </button>
-
-    <div class="access-error" id="accessError"></div>
-
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="login-btn" onclick="login()">Unlock →</button>
   </div>
-
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
+<div id="appPage">
+  <header>
+    <div class="header-row">
+      <div>
+        <div class="eyebrow">BPDB Residential</div>
+        <h1>Electricity Bill Calculator</h1>
+        <p>Fair cost distribution using average unit rate.</p>
+      </div>
+      <button class="logout-btn" onclick="logout()">🔒 Lock</button>
+    </div>
+  </header>
 
-<div id="app">
-
-<header>
-  <div class="eyebrow">BPDB Residential</div>
-
-  <h1>Electricity Bill Calculator</h1>
-
-  <p>Enter units consumed to get the full bill breakdown.</p>
-</header>
-
-<div class="card">
-
-  <div class="card-label">
-    Units consumed this month
-  </div>
-
-  <div class="input-row">
-
-    <div class="unit-wrap">
-      <input
-        type="number"
-        id="units"
-        value="90"
-        min="0"
-        oninput="calc()"
-      />
-
-      <span class="sfx">kWh</span>
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="step-label">Step 1 — Main meter</div>
+    <div class="card-label">Total units from main meter this month</div>
+    <div class="grid2">
+      <div class="input-group">
+        <span class="ig-label">Main meter total units</span>
+        <div class="ig-wrap">
+          <input type="number" id="mainUnits" placeholder="0" min="0" step="1" oninput="onMainChange()" />
+          <span class="sfx">kWh</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <span class="ig-label">No. of sub-meters</span>
+        <div class="ig-wrap">
+          <select id="numSubs" onchange="buildSubRows()">
+            <option value="1">1 sub-meter</option>
+            <option value="2" selected>2 sub-meters</option>
+            <option value="3">3 sub-meters</option>
+            <option value="4">4 sub-meters</option>
+            <option value="5">5 sub-meters</option>
+          </select>
+          <span class="sfx">▾</span>
+        </div>
+      </div>
     </div>
 
-    <div class="pill normal" id="pill">
-      Normal rates
+    <!-- avg banner -->
+    <div class="avg-banner" id="avgBanner">
+      <div>
+        <div class="avg-label">Average cost per unit</div>
+        <div class="avg-detail" id="avgDetail"></div>
+      </div>
+      <div class="avg-value" id="avgValue">—</div>
     </div>
 
+    <div class="divider"></div>
+
+    <!-- STEP 2 -->
+    <div class="step-label">Step 2 — Sub-meter readings</div>
+    <div class="card-label">Units used by each sub-meter</div>
+    <div id="subMetersWrap"></div>
+
+    <button class="calc-btn" onclick="calc()">⚡ Calculate Fair Bills</button>
+    <div class="enter-hint">each flat pays: avg rate × units used + fixed charges</div>
   </div>
 
-  <div class="hint" id="hint"></div>
+  <!-- unaccounted -->
+  <div class="unac-card" id="unacCard"></div>
 
-</div>
+  <!-- sub results -->
+  <div id="subResultsWrap" class="result-hidden"></div>
 
-<div class="card">
-
-  <div class="card-label">
-    Bill breakdown
+  <!-- grand total -->
+  <div class="grand-card result-hidden" id="grandCard">
+    <div class="gl">Grand total (all flats)</div>
+    <div class="ga" id="grandTotal">—</div>
   </div>
 
-  <div class="b-row">
+  <details>
+    <summary>Slab rate reference (main meter)</summary>
+    <table class="slab-table">
+      <thead><tr><th>Range (units)</th><th>Base (৳)</th><th>&gt;300 (+0.5)</th><th>&gt;400 (+2)</th><th>&gt;600 (+4)</th></tr></thead>
+      <tbody id="slabBody"></tbody>
+    </table>
+  </details>
 
-    <div>
-      <div class="lbl">Energy cost</div>
-      <div class="sub" id="detail"></div>
-    </div>
-
-    <div class="val" id="bEnergy"></div>
-
-  </div>
-
-  <div class="b-row">
-    <div class="lbl">VAT (5%)</div>
-    <div class="val" id="bVat"></div>
-  </div>
-
-  <div class="b-row">
-    <div class="lbl">Meter rent</div>
-    <div class="val">৳40.00</div>
-  </div>
-
-  <div class="b-row">
-    <div class="lbl">Demand charge</div>
-    <div class="val">৳42.00</div>
-  </div>
-
-</div>
-
-<div class="total-card t0" id="totalCard">
-
-  <div class="t-lbl">Total payable</div>
-
-  <div class="t-amt" id="bTotal"></div>
-
-</div>
-
-<details>
-
-  <summary>Slab rate reference</summary>
-
-  <table class="slab-table">
-
-    <thead>
-      <tr>
-        <th>Range</th>
-        <th>Base</th>
-        <th>>300</th>
-        <th>>400</th>
-        <th>>600</th>
-      </tr>
-    </thead>
-
-    <tbody id="slabBody"></tbody>
-
-  </table>
-
-</details>
-
-<footer>
-  Meter rent ৳40 · Demand charge ৳42 · VAT 5% on energy only
-</footer>
-
+  <footer>
+    Average rate = Total energy cost ÷ Total units &nbsp;·&nbsp; Each flat: avg rate × units + ৳40 meter rent + ৳45 demand charge ÷ no. of flats + 5% VAT<br>
+    &gt;300 units: +৳0.5/slab &nbsp;·&nbsp; &gt;400 units: +৳2/slab &nbsp;·&nbsp; &gt;600 units: +৳4/slab
+  </footer>
 </div>
 
 <script>
-
-const ACCESS_KEY = "@MaonaHome1460@";
-
-function checkAccess() {
-
-  const pass = document.getElementById('password').value;
-
-  if (pass === ACCESS_KEY) {
-
-    document.getElementById('accessScreen').style.display = 'none';
-
-    document.getElementById('app').style.display = 'flex';
-
-    localStorage.setItem('portal_access', 'granted');
-
-    calc();
-
-  } else {
-
-    document.getElementById('accessError').textContent =
-      'Invalid access key';
+  /* AUTH */
+  const PASSWORD = '@MaonaHome1460@';
+  const SK = 'maonahome_auth';
+  function login() {
+    const v = document.getElementById('pwInput').value;
+    const err = document.getElementById('errorMsg');
+    const inp = document.getElementById('pwInput');
+    if (v === PASSWORD) {
+      sessionStorage.setItem(SK,'1');
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('appPage').style.display = 'flex';
+      err.textContent=''; inp.classList.remove('error');
+      buildSubRows(); buildSlabTable();
+    } else {
+      err.textContent='Incorrect password. Try again.';
+      inp.classList.add('error'); inp.value=''; inp.focus();
+    }
   }
-}
-
-window.onload = () => {
-
-  if (localStorage.getItem('portal_access') === 'granted') {
-
-    document.getElementById('accessScreen').style.display = 'none';
-
-    document.getElementById('app').style.display = 'flex';
-
-    calc();
+  function logout() {
+    sessionStorage.removeItem(SK);
+    document.getElementById('appPage').style.display='none';
+    document.getElementById('loginPage').style.display='flex';
+    document.getElementById('pwInput').value='';
+    document.getElementById('errorMsg').textContent='';
   }
-};
-
-const BASE = [
-  {upTo:75, rate:5.26},
-  {upTo:200, rate:7.20},
-  {upTo:300, rate:7.59},
-  {upTo:400, rate:8.02},
-  {upTo:600, rate:12.67},
-  {upTo:Infinity, rate:14.61}
-];
-
-const PREV = [0,75,200,300,400,600];
-
-function getBonus(units) {
-
-  if (units > 600) return 4;
-
-  if (units > 400) return 2;
-
-  if (units > 300) return 0.5;
-
-  return 0;
-}
-
-function getTier(units) {
-
-  if (units > 600) return 3;
-
-  if (units > 400) return 2;
-
-  if (units > 300) return 1;
-
-  return 0;
-}
-
-function getSlabs(bonus) {
-
-  return BASE.map(s => ({
-    ...s,
-    rate: +(s.rate + bonus).toFixed(2)
-  }));
-}
-
-function computeEnergy(units, slabs) {
-
-  let cost = 0;
-
-  let rem = units;
-
-  let lines = [];
-
-  for (let i = 0; i < slabs.length; i++) {
-
-    const cap =
-      slabs[i].upTo === Infinity
-      ? rem
-      : Math.max(0, slabs[i].upTo - PREV[i]);
-
-    const used = Math.min(rem, cap);
-
-    if (used <= 0) break;
-
-    cost += used * slabs[i].rate;
-
-    lines.push(`${used} × ৳${slabs[i].rate.toFixed(2)}`);
-
-    rem -= used;
+  function togglePw() {
+    const inp=document.getElementById('pwInput'), btn=document.getElementById('pwToggle');
+    inp.type=inp.type==='password'?'text':'password';
+    btn.textContent=inp.type==='password'?'👁':'🙈';
+  }
+  if (sessionStorage.getItem(SK)==='1') {
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('appPage').style.display='flex';
   }
 
-  return {cost, lines};
-}
-
-function buildTable(units, tier) {
-
-  const body = document.getElementById('slabBody');
-
-  body.innerHTML = '';
-
-  const cols = [0,0.5,2,4];
-
-  const ranges = [
-    '0-75',
-    '76-200',
-    '201-300',
-    '301-400',
-    '401-600',
-    '601+'
+  /* SLAB DATA */
+  const BASE = [
+    {upTo:75,   rate:5.26},
+    {upTo:200,  rate:7.20},
+    {upTo:300,  rate:7.59},
+    {upTo:400,  rate:8.02},
+    {upTo:600,  rate:12.67},
+    {upTo:Infinity, rate:14.61}
   ];
+  const PREV   = [0,75,200,300,400,600];
+  const RANGES = ['0–75','76–200','201–300','301–400','401–600','601+'];
+  const COLS   = [0, 0.5, 2, 4];
 
-  for (let i = 0; i < BASE.length; i++) {
+  function getBonus(u){ return u>600?4:u>400?2:u>300?0.5:0; }
+  function getSlabs(b){ return BASE.map(s=>({...s,rate:+(s.rate+b).toFixed(2)})); }
 
-    let row = `<tr>
-      <td>${ranges[i]}</td>`;
+  function totalEnergyCost(units) {
+    const slabs = getSlabs(getBonus(units));
+    let cost=0, rem=units;
+    for(let i=0;i<slabs.length;i++){
+      const cap = slabs[i].upTo===Infinity ? rem : Math.max(0,slabs[i].upTo-PREV[i]);
+      const used = Math.min(rem,cap);
+      if(used<=0) break;
+      cost += used*slabs[i].rate;
+      rem -= used; if(rem<=0) break;
+    }
+    return cost;
+  }
 
-    for (let j = 0; j < cols.length; j++) {
+  function fmt(n){ return '৳'+n.toFixed(2); }
+  function fmtR(n){ return '৳'+n.toFixed(4); }
 
-      row += `
-        <td>
-          ৳${(BASE[i].rate + cols[j]).toFixed(2)}
-        </td>
-      `;
+  /* BUILD SUB ROWS */
+  function buildSubRows() {
+    const n = parseInt(document.getElementById('numSubs').value)||2;
+    const wrap = document.getElementById('subMetersWrap');
+    wrap.innerHTML='';
+    for(let i=1;i<=n;i++){
+      wrap.innerHTML += `
+        <div class="sub-row">
+          <span class="sub-tag">Flat ${i}</span>
+          <div class="sub-input-wrap">
+            <input type="number" id="sub_${i}" placeholder="0" min="0" step="1" onkeydown="if(event.key==='Enter') calc()" />
+            <span class="sfx">kWh</span>
+          </div>
+        </div>`;
+    }
+  }
+
+  /* MAIN CHANGE — show avg preview */
+  function onMainChange() {
+    const main = Math.max(0, parseFloat(document.getElementById('mainUnits').value)||0);
+    const banner = document.getElementById('avgBanner');
+    if(main > 0){
+      const energyCost = totalEnergyCost(main);
+      const fullBill   = energyCost + energyCost*0.05 + 40 + 45; // with fixed charges
+      const avgPerUnit = energyCost / main; // avg of energy portion only
+      document.getElementById('avgValue').textContent  = fmtR(avgPerUnit)+'/kWh';
+      document.getElementById('avgDetail').textContent =
+        `Main bill energy: ${fmt(energyCost)} ÷ ${main} units (slab bonus: +৳${getBonus(main)}/unit)`;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+    buildSlabTable();
+  }
+
+  /* MAIN CALC */
+  function calc() {
+    const main = Math.max(0, parseFloat(document.getElementById('mainUnits').value)||0);
+    const n    = parseInt(document.getElementById('numSubs').value)||2;
+    if(main===0){ alert('Please enter the main meter total units first.'); return; }
+
+    // 1. Total energy cost of main meter
+    const totalEnergy = totalEnergyCost(main);
+    // 2. Average cost per unit (energy only)
+    const avgRate = totalEnergy / main;
+    // 3. Collect sub-meter values
+    const subs = [];
+    for(let i=1;i<=n;i++){
+      const u = Math.max(0, parseFloat(document.getElementById('sub_'+i).value)||0);
+      subs.push({name:`Flat ${i}`, units:u});
     }
 
-    row += `</tr>`;
+    const totalSubUnits = subs.reduce((a,s)=>a+s.units,0);
+    const unaccounted   = main - totalSubUnits;
 
-    body.innerHTML += row;
+    // unaccounted notice
+    const unacCard = document.getElementById('unacCard');
+    if(Math.abs(unaccounted) > 0.01){
+      unacCard.classList.add('show');
+      unacCard.textContent = unaccounted > 0
+        ? `⚠ ${unaccounted} units unaccounted — sub-meters total ${totalSubUnits} of ${main} main units. Remaining may be common area or meter loss.`
+        : `⚠ Sub-meter total (${totalSubUnits}) exceeds main meter (${main}) by ${Math.abs(unaccounted)} units. Please re-check readings.`;
+    } else {
+      unacCard.classList.remove('show');
+    }
+
+    // 4. Per-flat bills
+    const METER_RENT   = 40;           // fixed per sub-meter
+    const DEMAND_TOTAL = 45;           // shared equally among all sub-meters
+    const demandPerFlat = DEMAND_TOTAL / n;
+
+    const resultsWrap = document.getElementById('subResultsWrap');
+    resultsWrap.innerHTML='';
+    let grandTotal = 0;
+
+    subs.forEach(sub => {
+      const energy   = avgRate * sub.units;
+      const vat      = energy * 0.05;
+      const total    = energy + vat + METER_RENT + demandPerFlat;
+      grandTotal    += total;
+
+      resultsWrap.innerHTML += `
+        <div class="sub-result-card">
+          <div class="src-header">
+            <span class="src-name">${sub.name} &nbsp;<span style="color:var(--muted);font-size:11px;">${sub.units} kWh</span></span>
+            <span style="text-align:right;"><span class="src-total">${fmt(total)}</span><span style="display:block;font-family:var(--font-m);font-size:11px;color:var(--muted);margin-top:2px;">${fmt(total)} ÷ ${sub.units} = ${sub.units > 0 ? fmt(total/sub.units) : '&mdash;'}/unit</span></span>
+          </div>
+          <div class="src-body">
+            <div class="src-row highlight">
+              <span class="sl">Energy (${sub.units} × ${fmtR(avgRate)})</span>
+              <span class="sv">${fmt(energy)}</span>
+            </div>
+            <div class="src-row">
+              <span class="sl">VAT (5% of energy)</span>
+              <span class="sv">${fmt(vat)}</span>
+            </div>
+            <div class="src-row">
+              <span class="sl">Meter rent</span>
+              <span class="sv">${fmt(METER_RENT)}</span>
+            </div>
+            <div class="src-row">
+              <span class="sl">Demand charge (৳${DEMAND_TOTAL} ÷ ${n})</span>
+              <span class="sv">${fmt(demandPerFlat)}</span>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    document.getElementById('grandTotal').textContent = fmt(grandTotal);
+    resultsWrap.className = 'result-visible';
+    document.getElementById('grandCard').className = 'grand-card result-visible';
+
+    // scroll to results
+    resultsWrap.scrollIntoView({behavior:'smooth', block:'start'});
   }
-}
 
-function fmt(n) {
-  return '৳' + n.toFixed(2);
-}
-
-function calc() {
-
-  const units = Math.max(
-    0,
-    parseFloat(document.getElementById('units').value) || 0
-  );
-
-  const bonus = getBonus(units);
-
-  const tier = getTier(units);
-
-  const slabs = getSlabs(bonus);
-
-  const pill = document.getElementById('pill');
-
-  const card = document.getElementById('totalCard');
-
-  if (tier === 0) {
-    pill.className = 'pill normal';
-    pill.textContent = 'Normal rates';
-    card.className = 'total-card t0';
+  /* SLAB TABLE */
+  function buildSlabTable() {
+    const main = Math.max(0, parseFloat(document.getElementById('mainUnits')?.value)||0);
+    const bonus = getBonus(main);
+    const tierIdx = bonus===0?0:bonus===0.5?1:bonus===2?2:3;
+    const body = document.getElementById('slabBody');
+    body.innerHTML='';
+    for(let i=0;i<BASE.length;i++){
+      const tr=document.createElement('tr');
+      let cells=`<td>${RANGES[i]}</td>`;
+      for(let t=0;t<4;t++){
+        const r=(BASE[i].rate+COLS[t]).toFixed(2);
+        const active = t===tierIdx;
+        cells+=`<td style="${active?'color:var(--accent);font-weight:500;':''}">${r}</td>`;
+      }
+      tr.innerHTML=cells; body.appendChild(tr);
+    }
   }
 
-  if (tier === 1) {
-    pill.className = 'pill medium';
-    pill.textContent = '>300: +৳0.5/slab';
-    card.className = 'total-card t1';
-  }
-
-  if (tier === 2) {
-    pill.className = 'pill high';
-    pill.textContent = '>400: +৳2/slab';
-    card.className = 'total-card t2';
-  }
-
-  if (tier === 3) {
-    pill.className = 'pill extreme';
-    pill.textContent = '>600: +৳4/slab';
-    card.className = 'total-card t3';
-  }
-
-  const result = computeEnergy(units, slabs);
-
-  const energy = result.cost;
-
-  const vat = energy * 0.05;
-
-  const total = energy + vat + 40 + 42;
-
-  document.getElementById('detail').textContent =
-    result.lines.join(' + ');
-
-  document.getElementById('bEnergy').textContent =
-    fmt(energy);
-
-  document.getElementById('bVat').textContent =
-    fmt(vat);
-
-  document.getElementById('bTotal').textContent =
-    fmt(total);
-
-  buildTable(units, tier);
-}
-
+  /* INIT */
+  buildSubRows();
+  buildSlabTable();
 </script>
-
 </body>
 </html>
