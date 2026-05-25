@@ -68,6 +68,8 @@
   .ig-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
   .ig-wrap input:focus, .ig-wrap select:focus { border-color: var(--accent); }
   .ig-wrap .sfx { position: absolute; right: .75rem; top: 50%; transform: translateY(-50%); font-family: var(--font-m); font-size: 11px; color: var(--muted); pointer-events: none; }
+  .ig-check { margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-m); font-size: 11px; color: var(--muted); letter-spacing: .02em; }
+  .ig-check input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
 
   /* avg cost banner */
   .avg-banner { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: .75rem 1rem; margin-top: 1rem; display: none; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
@@ -124,7 +126,7 @@
 
   details { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; width: 100%; max-width: 660px; }
   summary { font-family: var(--font-m); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; padding: 1rem 1.75rem; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; user-select: none; }
-  summary::after { content: '▸'; font-size: 10px; transition: transform .2s; }
+  summary::after { content: '>'; font-size: 10px; transition: transform .2s; }
   details[open] summary::after { transform: rotate(90deg); }
   .slab-table { width: 100%; border-collapse: collapse; font-family: var(--font-m); font-size: 13px; }
   .slab-table th { text-align: left; color: var(--muted); font-weight: 400; padding: 6px 1.75rem; border-top: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
@@ -144,7 +146,7 @@
   <div class="login-card">
     <label class="login-label" for="pwInput">Access password</label>
     <div class="pw-wrap">
-      <input type="password" id="pwInput" placeholder="Enter password…" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()" />
+      <input type="password" id="pwInput" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()" />
       <button class="pw-toggle" onclick="togglePw()" id="pwToggle">👁</button>
     </div>
     <div class="error-msg" id="errorMsg"></div>
@@ -167,7 +169,7 @@
 
   <!-- STEP 1 -->
   <div class="card">
-    <div class="step-label">Step 1 — Main meter</div>
+    <div class="step-label">Step 1 - Main meter</div>
     <div class="card-label">Total units from main meter this month</div>
     <div class="grid2">
       <div class="input-group">
@@ -187,8 +189,29 @@
             <option value="4">4 sub-meters</option>
             <option value="5">5 sub-meters</option>
           </select>
-          <span class="sfx">▾</span>
         </div>
+      </div>
+      <div class="input-group">
+        <span class="ig-label">Meter rent</span>
+        <div class="ig-wrap">
+          <input type="number" id="meterRent" placeholder="0" min="0" step="0.01" value="40" />
+          <span class="sfx">Tk</span>
+        </div>
+        <label class="ig-check">
+          <input type="checkbox" id="meterRentDivide" />
+          <span>isDividedBy sub-meters</span>
+        </label>
+      </div>
+      <div class="input-group">
+        <span class="ig-label">Demand charge</span>
+        <div class="ig-wrap">
+          <input type="number" id="demandCharge" placeholder="0" min="0" step="0.01" value="45" />
+          <span class="sfx">Tk</span>
+        </div>
+        <label class="ig-check">
+          <input type="checkbox" id="demandChargeDivide" checked />
+          <span>isDividedBy sub-meters</span>
+        </label>
       </div>
     </div>
 
@@ -198,18 +221,18 @@
         <div class="avg-label">Average cost per unit</div>
         <div class="avg-detail" id="avgDetail"></div>
       </div>
-      <div class="avg-value" id="avgValue">—</div>
+      <div class="avg-value" id="avgValue">-</div>
     </div>
 
     <div class="divider"></div>
 
     <!-- STEP 2 -->
-    <div class="step-label">Step 2 — Sub-meter readings</div>
+    <div class="step-label">Step 2 - Sub-meter readings</div>
     <div class="card-label">Units used by each sub-meter</div>
     <div id="subMetersWrap"></div>
 
-    <button class="calc-btn" onclick="calc()">⚡ Calculate Fair Bills</button>
-    <div class="enter-hint">each flat pays: avg rate × units used + fixed charges</div>
+    <button class="calc-btn" onclick="calc()">Calculate Fair Bills</button>
+    <div class="enter-hint">each flat pays: avg rate x units used + configurable charges + 5% VAT (energy)</div>
   </div>
 
   <!-- unaccounted -->
@@ -221,20 +244,16 @@
   <!-- grand total -->
   <div class="grand-card result-hidden" id="grandCard">
     <div class="gl">Grand total (all flats)</div>
-    <div class="ga" id="grandTotal">—</div>
+    <div class="ga" id="grandTotal">â€”</div>
   </div>
 
   <details>
     <summary>Slab rate reference (main meter)</summary>
     <table class="slab-table">
-      <thead><tr><th>Range (units)</th><th>Rate (৳/kWh)</th></tr></thead>
+      <thead><tr><th>Range (units)</th><th>Rate (Tk/kWh)</th></tr></thead>
       <tbody id="slabBody"></tbody>
     </table>
   </details>
-
-  <footer>
-    Average rate = Total energy cost ÷ Total units &nbsp;·&nbsp; Each flat: avg rate × units + ৳40 meter rent + ৳45 demand ÷ no. of flats + 5% VAT
-  </footer>
 </div>
 
 <script>
@@ -283,7 +302,7 @@
     {upTo:Infinity, rate:14.61}
   ];
   const PREV   = [0,75,200,300,400,600];
-  const RANGES = ['0–75','76–200','201–300','301–400','401–600','601+'];
+  const RANGES = ['0-75','76-200','201-300','301-400','401-600','601+'];
   function totalEnergyCost(units) {
     const slabs = BASE;
     let cost=0, rem=units;
@@ -297,8 +316,8 @@
     return cost;
   }
 
-  function fmt(n){ return '৳'+n.toFixed(2); }
-  function fmtR(n){ return '৳'+n.toFixed(4); }
+  function fmt(n){ return 'Tk '+n.toFixed(2); }
+  function fmtR(n){ return 'Tk '+n.toFixed(4); }
 
   /* BUILD SUB ROWS */
   function buildSubRows() {
@@ -317,17 +336,16 @@
     }
   }
 
-  /* MAIN CHANGE — show avg preview */
+  /* MAIN CHANGE â€” show avg preview */
   function onMainChange() {
     const main = Math.max(0, parseFloat(document.getElementById('mainUnits').value)||0);
     const banner = document.getElementById('avgBanner');
     if(main > 0){
       const energyCost = totalEnergyCost(main);
-      const fullBill   = energyCost + energyCost*0.05 + 40 + 45; // with fixed charges
       const avgPerUnit = energyCost / main; // avg of energy portion only
       document.getElementById('avgValue').textContent  = fmtR(avgPerUnit)+'/kWh';
       document.getElementById('avgDetail').textContent =
-        `Main bill energy: ${fmt(energyCost)} ÷ ${main} units`;
+        `Main bill energy: ${fmt(energyCost)} / ${main} units`;
       banner.classList.add('show');
     } else {
       banner.classList.remove('show');
@@ -360,16 +378,19 @@
     if(Math.abs(unaccounted) > 0.01){
       unacCard.classList.add('show');
       unacCard.textContent = unaccounted > 0
-        ? `⚠ ${unaccounted} units unaccounted — sub-meters total ${totalSubUnits} of ${main} main units. Remaining may be common area or meter loss.`
-        : `⚠ Sub-meter total (${totalSubUnits}) exceeds main meter (${main}) by ${Math.abs(unaccounted)} units. Please re-check readings.`;
+        ? `âš  ${unaccounted} units unaccounted â€” sub-meters total ${totalSubUnits} of ${main} main units. Remaining may be common area or meter loss.`
+        : `âš  Sub-meter total (${totalSubUnits}) exceeds main meter (${main}) by ${Math.abs(unaccounted)} units. Please re-check readings.`;
     } else {
       unacCard.classList.remove('show');
     }
 
     // 4. Per-flat bills
-    const METER_RENT   = 40;           // fixed per sub-meter
-    const DEMAND_TOTAL = 45;           // shared equally among all sub-meters
-    const demandPerFlat = DEMAND_TOTAL / n;
+    const meterRentValue = Math.max(0, parseFloat(document.getElementById('meterRent').value)||0);
+    const demandValue = Math.max(0, parseFloat(document.getElementById('demandCharge').value)||0);
+    const meterRentIsDivided = document.getElementById('meterRentDivide').checked;
+    const demandIsDivided = document.getElementById('demandChargeDivide').checked;
+    const meterRentPerFlat = meterRentIsDivided ? (meterRentValue / n) : meterRentValue;
+    const demandPerFlat = demandIsDivided ? (demandValue / n) : demandValue;
 
     const resultsWrap = document.getElementById('subResultsWrap');
     resultsWrap.innerHTML='';
@@ -378,18 +399,18 @@
     subs.forEach(sub => {
       const energy   = avgRate * sub.units;
       const vat      = energy * 0.05;
-      const total    = energy + vat + METER_RENT + demandPerFlat;
+      const total    = energy + vat + meterRentPerFlat + demandPerFlat;
       grandTotal    += total;
 
       resultsWrap.innerHTML += `
         <div class="sub-result-card">
           <div class="src-header">
             <span class="src-name">${sub.name} &nbsp;<span style="color:var(--muted);font-size:11px;">${sub.units} kWh</span></span>
-            <span style="text-align:right;"><span class="src-total">${fmt(total)}</span><span style="display:block;font-family:var(--font-m);font-size:11px;color:var(--muted);margin-top:2px;">${fmt(total)} ÷ ${sub.units} = ${sub.units > 0 ? fmt(total/sub.units) : '&mdash;'}/unit</span></span>
+            <span style="text-align:right;"><span class="src-total">${fmt(total)}</span><span style="display:block;font-family:var(--font-m);font-size:11px;color:var(--muted);margin-top:2px;">${fmt(total)} / ${sub.units} = ${sub.units > 0 ? fmt(total/sub.units) : '&mdash;'}/unit</span></span>
           </div>
           <div class="src-body">
             <div class="src-row highlight">
-              <span class="sl">Energy (${sub.units} × ${fmtR(avgRate)})</span>
+              <span class="sl">Energy (${sub.units} x ${fmtR(avgRate)})</span>
               <span class="sv">${fmt(energy)}</span>
             </div>
             <div class="src-row">
@@ -397,11 +418,11 @@
               <span class="sv">${fmt(vat)}</span>
             </div>
             <div class="src-row">
-              <span class="sl">Meter rent</span>
-              <span class="sv">${fmt(METER_RENT)}</span>
+              <span class="sl">Meter rent${meterRentIsDivided ? ` (${fmt(meterRentValue)} / ${n})` : ""}</span>
+              <span class="sv">${fmt(meterRentPerFlat)}</span>
             </div>
             <div class="src-row">
-              <span class="sl">Demand charge (৳${DEMAND_TOTAL} ÷ ${n})</span>
+              <span class="sl">Demand charge${demandIsDivided ? ` (${fmt(demandValue)} / ${n})` : ""}</span>
               <span class="sv">${fmt(demandPerFlat)}</span>
             </div>
           </div>
